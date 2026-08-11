@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>शिक्षा साथी | ट्युटर आवेदन पोर्टल</title>
+  
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --primary-blue: #0b2545;
+      --accent-red: #c8102e;
+      --bg-color: #f0f4f8;
+      --card-bg: #ffffff;
+      --border-color: #1e3a8a;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; font-family: 'Mukta', 'Inter', sans-serif; margin: 0; padding: 0; }
+    body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 40px; }
+
+    /* Header Styling */
+    .header-bar {
+      background: var(--primary-blue);
+      color: white;
+      padding: 12px 20px;
+      border-bottom: 4px solid var(--accent-red);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand img { height: 50px; width: auto; background: white; border-radius: 50%; padding: 2px; }
+    .brand-text h1 { font-size: 20px; font-weight: 700; color: #ffffff; }
+    .brand-text p { font-size: 12px; color: #cbd5e1; }
+
+    .btn-refresh {
+      background: var(--accent-red);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+    .btn-refresh:hover { background: #9b111e; }
+
+    /* Layout Container */
+    .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
+
+    /* Controls Bar */
+    .controls-card {
+      background: var(--card-bg);
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box, .filter-box { flex: 1; min-width: 200px; position: relative; }
+    
+    .search-box input, .filter-box select {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .search-box i, .filter-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .filter-btn-today {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .filter-btn-today.active { background: #0284c7; color: white; }
+
+    .btn-reject-all {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-reject-all:hover { background: #fca5a5; }
+
+    /* Card Grid System */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* Individual Applicant Box Card */
+    .applicant-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+    .vacancy-badge {
+      background: #1e3a8a;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .location-badge {
+      background: #e2e8f0;
+      color: #334155;
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .applicant-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary-blue);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+      width: fit-content;
+    }
+    .whatsapp-btn:hover { background: #c8e6c9; }
+
+    .card-details { border-top: 1px solid #f1f5f9; padding-top: 10px; font-size: 14px; color: #475569; }
+    .card-details div { margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+
+    .card-footer-text {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 8px;
+      margin-top: 10px;
+    }
+
+    .card-action { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+
+    .status-select {
+      flex: 1;
+      padding: 6px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      border: 1px solid #cbd5e1;
+    }
+    .status-Pending { background: #fffbe3; color: #b45309; }
+    .status-Accepted { background: #dcfce7; color: #15803d; }
+    .status-Rejected { background: #fee2e2; color: #b91c1c; }
+
+    .btn-save {
+      background: var(--primary-blue);
+      color: white;
+      border: none;
+      padding: 7px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .btn-save:hover { background: #1e3a8a; }
+
+    .loader { text-align: center; padding: 40px; font-size: 16px; color: var(--primary-blue); font-weight: 600; }
+
+    /* Modal Popup Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-box h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: var(--primary-blue);
+    }
+    .modal-box p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-modal {
+      flex: 1;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-accept-pending { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .btn-accept-pending:hover { background: #bbf7d0; }
+    .btn-rejected-only { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .btn-rejected-only:hover { background: #fecaca; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <div class="header-bar">
+    <div class="header-content">
+      <div class="brand">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiL7dDqEm-oYV5DXpfPm4YM9kpU1IB3uRoxQn6itok7vJskTq8Uts_flkvKk-QRxXK1R7k8fJ3s5pRHCmLbSnlA2uiocm_uwmGOmlPwI90_NOIWnclF8_JW-r3AWE2u36-ExBJSK6L82fZoB_75xwgzzTKwhX4Zza7T_M20GkGI38Y4vLc6Yi1EDMu6FDso/s1254/1000275071.png" alt="शिक्षा साथी">
+        <div class="brand-text">
+          <h1>शिक्षा साथी</h1>
+          <p>ट्युटर तथा भ्याकेन्सी आवेदन पोर्टल</p>
+        </div>
+      </div>
+      <button class="btn-refresh" onclick="loadData()"><i class="fa-solid fa-rotate-right"></i> रिफ्रेस</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Controls Area -->
+    <div class="controls-card">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" onkeyup="filterCards()" placeholder="नाम, फोन नम्बर वा भ्याकेन्सी कोड खोज्नुहोस्...">
+      </div>
+
+      <div class="filter-box">
+        <i class="fa-solid fa-filter"></i>
+        <select id="vacancyFilter" onchange="onVacancyChange()">
+          <option value="">सबै भ्याकेन्सी कोड</option>
+        </select>
+      </div>
+
+      <button id="todayBtn" class="filter-btn-today" onclick="toggleTodayFilter()">
+        <i class="fa-solid fa-calendar-day"></i> आजका आवेदनहरू
+      </button>
+
+      <button class="btn-reject-all" onclick="rejectAllFiltered()">
+        <i class="fa-solid fa-user-xmark"></i> सबै रिजेक्ट गर्नुहोस्
+      </button>
+    </div>
+
+    <div id="loading" class="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> डाटा लोड हुँदैछ...</div>
+    <div id="cardsGrid" class="cards-grid"></div>
+  </div>
+
+  <!-- Modal Popup for Vacancy Filter Selection -->
+  <div id="vacancyModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>आवेदनको प्रकार छान्नुहोस्</h3>
+      <p id="modalVacancyText">यो भ्याकेन्सीका कुन आवेदनहरू हेर्न चाहनुहुन्छ?</p>
+      <div class="modal-buttons">
+        <button class="btn-modal btn-accept-pending" onclick="selectModalStatusFilter('active')">
+          <i class="fa-solid fa-circle-check"></i> Accept & Pending
+        </button>
+        <button class="btn-modal btn-rejected-only" onclick="selectModalStatusFilter('rejected')">
+          <i class="fa-solid fa-circle-xmark"></i> Rejected
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2roI6JJg1p5QdAEwNALuBkQ64JpfYox-yMQTo8ILT5y58PuO7K6Dp7lcKL-yPtHLRSw/exec";
+    let rawData = [];
+    let currentFilteredData = [];
+    let showTodayOnly = false;
+    let selectedStatusGroup = "all"; // 'all', 'active' (Accept & Pending), or 'rejected'
+
+    async function loadData() {
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("cardsGrid").innerHTML = "";
+
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const data = await response.json();
+
+        // Remove Duplicate Name & Phone combinations
+        rawData = removeDuplicates(data);
+
+        populateVacancyFilter(rawData);
+        filterCards();
+
+        document.getElementById("loading").style.display = "none";
+      } catch (err) {
+        document.getElementById("loading").innerHTML = `<span style="color:red;">डाटा लोड हुन सकेन: ${err.message}</span>`;
+      }
+    }
+
+    function removeDuplicates(dataList) {
+      const uniqueMap = new Map();
+      dataList.forEach(item => {
+        const name = (item["FULL NAME"] || item["colA"] || "").trim().toLowerCase();
+        const phone = (item["PHONE NO"] || item["colB"] || "").trim();
+        const key = `${name}_${phone}`;
+
+        if (!uniqueMap.has(key) && (name !== "" || phone !== "")) {
+          uniqueMap.set(key, item);
+        }
+      });
+      return Array.from(uniqueMap.values());
+    }
+
+    function renderCards(list) {
+      const grid = document.getElementById("cardsGrid");
+      grid.innerHTML = "";
+
+      if (list.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:30px; color:#666;">कुनै विवरण भेटिएन।</div>`;
+        return;
+      }
+
+      list.forEach((item, index) => {
+        const name = item["FULL NAME"] || item["colA"] || "N/A";
+        const phone = item["PHONE NO"] || item["colB"] || "N/A";
+        const code = item["colC"] || item["colB"] || "vac-005";
+        const subject = item["colD"] || "N/A";
+        const location = item["colE"] || "N/A";
+        let status = item["STATUS"] || item["RESULT"] || item["H"] || "Pending";
+        
+        // Normalize Status
+        const lowerStatus = status.toLowerCase();
+        if(lowerStatus.includes("accept")) status = "Accepted";
+        else if(lowerStatus.includes("reject")) status = "Rejected";
+        else status = "Pending";
+
+        const rowIndex = item["rowIndex"];
+
+        // WhatsApp direct link generator
+        let cleanPhone = phone.replace(/[^0-9]/g, '');
+        if (cleanPhone.length === 10) cleanPhone = '977' + cleanPhone;
+
+        const card = document.createElement("div");
+        card.className = "applicant-card";
+        card.innerHTML = `
+          <div>
+            <div class="card-top">
+              <span class="vacancy-badge">${code}</span>
+              <span class="location-badge"><i class="fa-solid fa-location-dot"></i> ${location}</span>
+            </div>
+
+            <div class="applicant-name">
+              <i class="fa-solid fa-user"></i> ${name}
+            </div>
+
+            <p style="font-size:12px; color:#666; margin-bottom:4px;">सम्पर्क (WhatsApp):</p>
+            <a href="https://wa.me/${cleanPhone}" target="_blank" class="whatsapp-btn">
+              <i class="fa-brands fa-whatsapp" style="font-size:18px;"></i> ${phone}
+            </a>
+
+            <div class="card-details">
+              <div><i class="fa-solid fa-book"></i> <strong>विषय:</strong> ${subject}</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card-footer-text">
+              <i class="fa-solid fa-graduation-cap"></i> शिक्षा साथी - रेकर्ड कार्ड
+            </div>
+
+            <div class="card-action">
+              <select id="status-${index}" class="status-select status-${status}" onchange="this.className='status-select status-'+this.value">
+                <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="Accepted" ${status === 'Accepted' ? 'selected' : ''}>Accepted</option>
+                <option value="Rejected" ${status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+              </select>
+              <button class="btn-save" onclick="saveStatus('${name}', '${phone}', ${rowIndex}, ${index})">
+                <i class="fa-solid fa-floppy-disk"></i> Save
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function populateVacancyFilter(data) {
+      const select = document.getElementById("vacancyFilter");
+      select.innerHTML = `<option value="">सबै भ्याकेन्सी कोड</option>`;
+      
+      const codes = [...new Set(data.map(i => i["colC"] || i["colB"] || "vac-005"))]
+                     .filter(Boolean)
+                     .sort()
+                     .reverse();
+
+      codes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
+    }
+
+    // Triggered when user selects a Vacancy Code from dropdown
+    function onVacancyChange() {
+      const vacancy = document.getElementById("vacancyFilter").value;
+      if (vacancy) {
+        document.getElementById("modalVacancyText").innerText = `भ्याकेन्सी "${vacancy}" का के हेर्न चाहनुहुन्छ?`;
+        document.getElementById("vacancyModal").style.display = "flex";
+      } else {
+        selectedStatusGroup = "all";
+        filterCards();
+      }
+    }
+
+    function selectModalStatusFilter(groupType) {
+      selectedStatusGroup = groupType;
+      document.getElementById("vacancyModal").style.display = "none";
+      filterCards();
+    }
+
+    function toggleTodayFilter() {
+      showTodayOnly = !showTodayOnly;
+      document.getElementById("todayBtn").classList.toggle("active", showTodayOnly);
+      filterCards();
+    }
+
+    function filterCards() {
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const vacancy = document.getElementById("vacancyFilter").value;
+      const todayStr = new Date().toISOString().slice(0, 10);
+
+      currentFilteredData = rawData.filter(item => {
+        const name = (item["FULL NAME"] || item["colA"] || "").toLowerCase();
+        const phone = (item["PHONE NO"] || item["colB"] || "").toLowerCase();
+        const code = (item["colC"] || item["colB"] || "vac-005").toLowerCase();
+        const dateStr = item["colG"] || item["colF"] || "";
+
+        let status = (item["STATUS"] || item["RESULT"] || item["H"] || "Pending").toLowerCase();
+
+        const matchSearch = name.includes(search) || phone.includes(search) || code.includes(search);
+        const matchVacancy = vacancy === "" || code === vacancy.toLowerCase();
+        const matchToday = !showTodayOnly || dateStr.includes(todayStr);
+
+        // Status Group Filtering from Modal Selection
+        let matchStatusGroup = true;
+        if (vacancy !== "") {
+          if (selectedStatusGroup === "active") {
+            matchStatusGroup = status.includes("pending") || status.includes("accept");
+          } else if (selectedStatusGroup === "rejected") {
+            matchStatusGroup = status.includes("reject");
+          }
+        }
+
+        return matchSearch && matchVacancy && matchToday && matchStatusGroup;
+      });
+
+      renderCards(currentFilteredData);
+    }
+
+    // Google Sheet मा Status Permanent Update गर्ने Function
+    async function saveStatus(name, phone, rowIndex, index) {
+      const newStatus = document.getElementById(`status-${index}`).value;
+
+      const payload = {
+        action: "updateStatus",
+        rowIndex: rowIndex,
+        applicant_name: name,
+        applicant_phone: phone,
+        status: newStatus
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        alert(`Status changed to "${newStatus}"!`);
+        setTimeout(loadData, 1200);
+      } catch (err) {
+        alert("Update Error: " + err.message);
+      }
+    }
+
+    // Reject All Filtered Applicants
+    async function rejectAllFiltered() {
+      if (currentFilteredData.length === 0) {
+        alert("कुनै पनि डाटा फिल्टर भएको छैन!");
+        return;
+      }
+
+      const confirmAction = confirm(`के तपाईं स्क्रिनमा देखिएका ${currentFilteredData.length} जना सबैलाई "Rejected" गर्न चाहनुहुन्छ?`);
+      if (!confirmAction) return;
+
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("loading").innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> सबैलाई Reject गर्दैछ...`;
+
+      for (let item of currentFilteredData) {
+        const name = item["FULL NAME"] || item["colA"] || "";
+        const phone = item["PHONE NO"] || item["colB"] || "";
+        const rowIndex = item["rowIndex"];
+
+        const payload = {
+          action: "updateStatus",
+          rowIndex: rowIndex,
+          applicant_name: name,
+          applicant_phone: phone,
+          status: "Rejected"
+        };
+
+        try {
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {
+          console.error("Error rejecting row:", rowIndex);
+        }
+      }
+
+      alert("सबै फिल्टर गरिएका आवेदनहरू Reject भइसकेका छन्!");
+      loadData();
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
