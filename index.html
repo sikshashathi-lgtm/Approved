@@ -73,7 +73,7 @@
       border: 1px solid #cbd5e1;
       margin-bottom: 20px;
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       align-items: center;
     }
@@ -121,7 +121,43 @@
     }
     .btn-reject-all:hover { background: #fca5a5; }
 
-    /* Card Grid System */
+    /* Delete All Button */
+    .btn-delete-all {
+      background: #dc2626;
+      color: white;
+      border: 1px solid #b91c1c;
+      padding: 9px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-delete-all:hover { background: #991b1b; }
+
+    /* View Switcher Controls */
+    .view-switcher {
+      display: flex;
+      background: #e2e8f0;
+      border-radius: 6px;
+      padding: 2px;
+    }
+    .btn-view {
+      border: none;
+      background: transparent;
+      padding: 7px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .btn-view.active {
+      background: white;
+      color: var(--primary-blue);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Card Grid System (Leaflet View) */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -239,6 +275,35 @@
     }
     .btn-delete:hover { background: #991b1b; }
 
+    /* Table/Row View Styling */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .applicant-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+    .applicant-table th {
+      background: var(--primary-blue);
+      color: white;
+      padding: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .applicant-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: middle;
+    }
+    .applicant-table tr:hover { background: #f8fafc; }
+
     .loader { text-align: center; padding: 40px; font-size: 16px; color: var(--primary-blue); font-weight: 600; }
 
     /* Modal Popup Styling */
@@ -326,13 +391,27 @@
         <i class="fa-solid fa-calendar-day"></i> आजका आवेदनहरू
       </button>
 
+      <!-- View Switcher Toggle Button -->
+      <div class="view-switcher">
+        <button id="cardViewBtn" class="btn-view active" onclick="switchView('card')">
+          <i class="fa-solid fa-table-cells-large"></i> Leaflet
+        </button>
+        <button id="rowViewBtn" class="btn-view" onclick="switchView('row')">
+          <i class="fa-solid fa-list-check"></i> Row
+        </button>
+      </div>
+
       <button class="btn-reject-all" onclick="rejectAllFiltered()">
-        <i class="fa-solid fa-user-xmark"></i> सबै रिजेक्ट गर्नुहोस्
+        <i class="fa-solid fa-user-xmark"></i> सबै रिजेक्ट
+      </button>
+
+      <button class="btn-delete-all" onclick="deleteAllFiltered()">
+        <i class="fa-solid fa-trash-can"></i> सबै डिलीट
       </button>
     </div>
 
     <div id="loading" class="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> डाटा लोड हुँदैछ...</div>
-    <div id="cardsGrid" class="cards-grid"></div>
+    <div id="cardsGrid"></div>
   </div>
 
   <!-- Modal Popup for Vacancy Filter Selection -->
@@ -352,13 +431,13 @@
   </div>
 
   <script>
-    // नयाँ अपडेट गरिएको SCRIPT URL
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGcbWr96JKR9SreLX4JbfcGRyv1iwUoeIk3HuokZtOvYcvpjEm03JVDyX1xkXXn5HZQg/exec";
     
     let rawData = [];
     let currentFilteredData = [];
     let showTodayOnly = false;
     let selectedStatusGroup = "all"; // 'all', 'active' (Accept & Pending), or 'rejected'
+    let currentViewMode = "card"; // 'card' (Leaflet View) or 'row' (Table View)
 
     async function loadData() {
       document.getElementById("loading").style.display = "block";
@@ -394,14 +473,32 @@
       return Array.from(uniqueMap.values());
     }
 
-    function renderCards(list) {
-      const grid = document.getElementById("cardsGrid");
-      grid.innerHTML = "";
+    function switchView(mode) {
+      currentViewMode = mode;
+      document.getElementById("cardViewBtn").classList.toggle("active", mode === 'card');
+      document.getElementById("rowViewBtn").classList.toggle("active", mode === 'row');
+      renderDisplay(currentFilteredData);
+    }
+
+    function renderDisplay(list) {
+      const container = document.getElementById("cardsGrid");
+      container.innerHTML = "";
 
       if (list.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:30px; color:#666;">कुनै विवरण भेटिएन।</div>`;
+        container.innerHTML = `<div style="text-align:center; padding:30px; color:#666;">कुनै विवरण भेटिएन।</div>`;
         return;
       }
+
+      if (currentViewMode === "card") {
+        renderCardView(list, container);
+      } else {
+        renderRowView(list, container);
+      }
+    }
+
+    // 1. Leaflet / Card View Renderer
+    function renderCardView(list, container) {
+      container.className = "cards-grid";
 
       list.forEach((item, index) => {
         const name = item["FULL NAME"] || item["colA"] || "N/A";
@@ -409,19 +506,10 @@
         const code = item["colC"] || item["colB"] || "vac-005";
         const subject = item["colD"] || "N/A";
         const location = item["colE"] || "N/A";
-        let status = item["STATUS"] || item["RESULT"] || item["H"] || "Pending";
-        
-        // Normalize Status
-        const lowerStatus = status.toLowerCase();
-        if(lowerStatus.includes("accept")) status = "Accepted";
-        else if(lowerStatus.includes("reject")) status = "Rejected";
-        else status = "Pending";
+        let status = getNormalizedStatus(item["STATUS"] || item["RESULT"] || item["H"] || "Pending");
 
         const rowIndex = item["rowIndex"];
-
-        // WhatsApp direct link generator
-        let cleanPhone = phone.replace(/[^0-9]/g, '');
-        if (cleanPhone.length === 10) cleanPhone = '977' + cleanPhone;
+        let cleanPhone = getCleanPhone(phone);
 
         const card = document.createElement("div");
         card.className = "applicant-card";
@@ -468,8 +556,85 @@
             </div>
           </div>
         `;
-        grid.appendChild(card);
+        container.appendChild(card);
       });
+    }
+
+    // 2. Row / Table View Renderer
+    function renderRowView(list, container) {
+      container.className = "table-container";
+
+      let tableHtml = `
+        <table class="applicant-table">
+          <thead>
+            <tr>
+              <th>कोड</th>
+              <th>नाम</th>
+              <th>सम्पर्क (WhatsApp)</th>
+              <th>विषय</th>
+              <th>ठेगाना</th>
+              <th>स्टेटस</th>
+              <th style="text-align:center;">कार्य (Action)</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      list.forEach((item, index) => {
+        const name = item["FULL NAME"] || item["colA"] || "N/A";
+        const phone = item["PHONE NO"] || item["colB"] || "N/A";
+        const code = item["colC"] || item["colB"] || "vac-005";
+        const subject = item["colD"] || "N/A";
+        const location = item["colE"] || "N/A";
+        let status = getNormalizedStatus(item["STATUS"] || item["RESULT"] || item["H"] || "Pending");
+        const rowIndex = item["rowIndex"];
+        let cleanPhone = getCleanPhone(phone);
+
+        tableHtml += `
+          <tr>
+            <td><span class="vacancy-badge">${code}</span></td>
+            <td><strong>${name}</strong></td>
+            <td>
+              <a href="https://wa.me/${cleanPhone}" target="_blank" style="color:#2e7d32; font-weight:bold; text-decoration:none;">
+                <i class="fa-brands fa-whatsapp"></i> ${phone}
+              </a>
+            </td>
+            <td>${subject}</td>
+            <td>${location}</td>
+            <td>
+              <select id="status-${index}" class="status-select status-${status}" onchange="this.className='status-select status-'+this.value">
+                <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option value="Accepted" ${status === 'Accepted' ? 'selected' : ''}>Accepted</option>
+                <option value="Rejected" ${status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+              </select>
+            </td>
+            <td style="text-align:center; white-space:nowrap;">
+              <button class="btn-save" onclick="saveStatus('${name}', '${phone}', ${rowIndex}, ${index})">
+                <i class="fa-solid fa-floppy-disk"></i>
+              </button>
+              <button class="btn-delete" onclick="deleteApplication('${name}', ${rowIndex})">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      tableHtml += `</tbody></table>`;
+      container.innerHTML = tableHtml;
+    }
+
+    function getNormalizedStatus(rawStatus) {
+      const lowerStatus = String(rawStatus).toLowerCase();
+      if(lowerStatus.includes("accept")) return "Accepted";
+      if(lowerStatus.includes("reject")) return "Rejected";
+      return "Pending";
+    }
+
+    function getCleanPhone(phone) {
+      let clean = String(phone).replace(/[^0-9]/g, '');
+      if (clean.length === 10) clean = '977' + clean;
+      return clean;
     }
 
     function populateVacancyFilter(data) {
@@ -484,7 +649,6 @@
       codes.forEach(c => { select.innerHTML += `<option value="${c}">${c}</option>`; });
     }
 
-    // Triggered when user selects a Vacancy Code from dropdown
     function onVacancyChange() {
       const vacancy = document.getElementById("vacancyFilter").value;
       if (vacancy) {
@@ -525,7 +689,6 @@
         const matchVacancy = vacancy === "" || code === vacancy.toLowerCase();
         const matchToday = !showTodayOnly || dateStr.includes(todayStr);
 
-        // Status Group Filtering from Modal Selection
         let matchStatusGroup = true;
         if (vacancy !== "") {
           if (selectedStatusGroup === "active") {
@@ -538,7 +701,7 @@
         return matchSearch && matchVacancy && matchToday && matchStatusGroup;
       });
 
-      renderCards(currentFilteredData);
+      renderDisplay(currentFilteredData);
     }
 
     // Google Sheet मा Status Permanent Update गर्ने Function
@@ -568,7 +731,7 @@
       }
     }
 
-    // Google Sheet बाट Application permanent डिलीट गर्ने Function
+    // Google Sheet बाट Single Application permanent डिलीट गर्ने Function
     async function deleteApplication(name, rowIndex) {
       const confirmDelete = confirm(`के तपाईं "${name}" को आवेदन स्थायी रूपमा डिलीट (Delete) गर्न चाहनुहुन्छ?`);
       if (!confirmDelete) return;
@@ -636,6 +799,46 @@
       }
 
       alert("सबै फिल्टर गरिएका आवेदनहरू Reject भइसकेका छन्!");
+      loadData();
+    }
+
+    // Delete All Filtered Applicants Function (नयाँ थपिएको)
+    async function deleteAllFiltered() {
+      if (currentFilteredData.length === 0) {
+        alert("कुनै पनि डाटा फिल्टर भएको छैन!");
+        return;
+      }
+
+      const confirmAction = confirm(`⚠️ चेतावनी! के तपाईं स्क्रिनमा देखिएका ${currentFilteredData.length} जना सबै आवेदनहरू Google Sheet बाट स्थायी रूपमा DELETE गर्न चाहनुहुन्छ?`);
+      if (!confirmAction) return;
+
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("loading").innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> फिल्टर भएका सबै डाटा डिलीट हुँदैछ...`;
+
+      // डिलीट गर्दा Row index परिवर्तन हुन नदिन उल्टो (Reverse Order) मा डिलीट गरिन्छ
+      const sortedToDelete = [...currentFilteredData].sort((a, b) => b.rowIndex - a.rowIndex);
+
+      for (let item of sortedToDelete) {
+        const rowIndex = item["rowIndex"];
+
+        const payload = {
+          action: "deleteRow",
+          rowIndex: rowIndex
+        };
+
+        try {
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+        } catch (err) {
+          console.error("Error deleting row:", rowIndex);
+        }
+      }
+
+      alert("सबै फिल्टर गरिएका आवेदनहरू स्थायी रूपमा डिलीट भइसकेका छन्!");
       loadData();
     }
 
