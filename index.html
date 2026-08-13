@@ -199,10 +199,11 @@
       margin-top: 10px;
     }
 
-    .card-action { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+    .card-action { display: flex; gap: 6px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
 
     .status-select {
       flex: 1;
+      min-width: 100px;
       padding: 6px;
       border-radius: 6px;
       font-weight: 700;
@@ -217,13 +218,26 @@
       background: var(--primary-blue);
       color: white;
       border: none;
-      padding: 7px 12px;
+      padding: 7px 10px;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
       font-size: 13px;
     }
     .btn-save:hover { background: #1e3a8a; }
+
+    /* Delete Button Styling */
+    .btn-delete {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .btn-delete:hover { background: #991b1b; }
 
     .loader { text-align: center; padding: 40px; font-size: 16px; color: var(--primary-blue); font-weight: 600; }
 
@@ -338,7 +352,9 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2roI6JJg1p5QdAEwNALuBkQ64JpfYox-yMQTo8ILT5y58PuO7K6Dp7lcKL-yPtHLRSw/exec";
+    // नयाँ अपडेट गरिएको SCRIPT URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGcbWr96JKR9SreLX4JbfcGRyv1iwUoeIk3HuokZtOvYcvpjEm03JVDyX1xkXXn5HZQg/exec";
+    
     let rawData = [];
     let currentFilteredData = [];
     let showTodayOnly = false;
@@ -441,8 +457,13 @@
                 <option value="Accepted" ${status === 'Accepted' ? 'selected' : ''}>Accepted</option>
                 <option value="Rejected" ${status === 'Rejected' ? 'selected' : ''}>Rejected</option>
               </select>
+              
               <button class="btn-save" onclick="saveStatus('${name}', '${phone}', ${rowIndex}, ${index})">
                 <i class="fa-solid fa-floppy-disk"></i> Save
+              </button>
+
+              <button class="btn-delete" onclick="deleteApplication('${name}', ${rowIndex})">
+                <i class="fa-solid fa-trash"></i> Delete
               </button>
             </div>
           </div>
@@ -544,6 +565,35 @@
         setTimeout(loadData, 1200);
       } catch (err) {
         alert("Update Error: " + err.message);
+      }
+    }
+
+    // Google Sheet बाट Application permanent डिलीट गर्ने Function
+    async function deleteApplication(name, rowIndex) {
+      const confirmDelete = confirm(`के तपाईं "${name}" को आवेदन स्थायी रूपमा डिलीट (Delete) गर्न चाहनुहुन्छ?`);
+      if (!confirmDelete) return;
+
+      const payload = {
+        action: "deleteRow",
+        rowIndex: rowIndex
+      };
+
+      try {
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("loading").innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> डिलीट हुँदैछ...`;
+
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        alert("आवेदन सफलतापूर्वक डिलीट भयो!");
+        setTimeout(loadData, 1200);
+      } catch (err) {
+        alert("Delete Error: " + err.message);
+        document.getElementById("loading").style.display = "none";
       }
     }
 
